@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
               height: double.infinity,
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage("assets/images/background.jpg"),
+                  image: NetworkImage("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4ifAPkvjBxGuPA74qvyJBU7TOayHB_eXDuSnNU4YqRw&s=10"),
                   fit: BoxFit.cover,
                 ),
               ),
