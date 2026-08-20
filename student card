@@ -21,7 +21,7 @@ class StudentApp extends StatelessWidget {
   }
 }
 
-// Reusable Custom Student Card Widget
+// Reusable Student Card
 class StudentCard extends StatelessWidget {
   final String studentName;
   final String branch;
@@ -39,7 +39,7 @@ class StudentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 5,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
@@ -48,7 +48,6 @@ class StudentCard extends StatelessWidget {
         padding: const EdgeInsets.all(18),
         child: Row(
           children: [
-            // Student Icon
             CircleAvatar(
               radius: 30,
               backgroundColor: Colors.blue.shade100,
@@ -61,7 +60,6 @@ class StudentCard extends StatelessWidget {
 
             const SizedBox(width: 20),
 
-            // Student Details
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,10 +76,7 @@ class StudentCard extends StatelessWidget {
 
                   Text(
                     "Branch: $branch",
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black87,
-                    ),
+                    style: const TextStyle(fontSize: 16),
                   ),
 
                   const SizedBox(height: 5),
@@ -90,7 +85,7 @@ class StudentCard extends StatelessWidget {
                     "CGPA: ${cgpa.toStringAsFixed(2)}",
                     style: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                       color: Colors.green.shade700,
                     ),
                   ),
@@ -105,8 +100,60 @@ class StudentCard extends StatelessWidget {
 }
 
 // Home Page
-class StudentHomePage extends StatelessWidget {
+class StudentHomePage extends StatefulWidget {
   const StudentHomePage({super.key});
+
+  @override
+  State<StudentHomePage> createState() => _StudentHomePageState();
+}
+
+class _StudentHomePageState extends State<StudentHomePage> {
+
+  // Controllers for input fields
+  final nameController = TextEditingController();
+  final branchController = TextEditingController();
+  final cgpaController = TextEditingController();
+
+  // List to store students
+  final List<Map<String, dynamic>> students = [];
+
+  // Add student
+  void addStudent() {
+    String name = nameController.text;
+    String branch = branchController.text;
+    double? cgpa = double.tryParse(cgpaController.text);
+
+    if (name.isEmpty || branch.isEmpty || cgpa == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Please enter all details"),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      students.add({
+        "name": name,
+        "branch": branch,
+        "cgpa": cgpa,
+        "icon": Icons.person,
+      });
+    });
+
+    // Clear input fields
+    nameController.clear();
+    branchController.clear();
+    cgpaController.clear();
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    branchController.dispose();
+    cgpaController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,31 +163,78 @@ class StudentHomePage extends StatelessWidget {
         centerTitle: true,
       ),
 
-      body: ListView(
+      body: Padding(
         padding: const EdgeInsets.all(16),
 
-        children: const [
-          StudentCard(
-            studentName: "Arun Kumar",
-            branch: "Computer Science",
-            cgpa: 8.75,
-            icon: Icons.computer,
-          ),
+        child: Column(
+          children: [
 
-          StudentCard(
-            studentName: "Priya Sharma",
-            branch: "Information Technology",
-            cgpa: 9.10,
-            icon: Icons.laptop,
-          ),
+            // Student Name
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: "Student Name",
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.person),
+              ),
+            ),
 
-          StudentCard(
-            studentName: "Rahul Raj",
-            branch: "Mechanical Engineering",
-            cgpa: 8.25,
-            icon: Icons.engineering,
-          ),
-        ],
+            const SizedBox(height: 10),
+
+            // Branch
+            TextField(
+              controller: branchController,
+              decoration: const InputDecoration(
+                labelText: "Branch",
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.school),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // CGPA
+            TextField(
+              controller: cgpaController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: "CGPA",
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.star),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            // Add Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: addStudent,
+                child: const Text("Add Student"),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // Student Cards
+            Expanded(
+              child: ListView.builder(
+                itemCount: students.length,
+                itemBuilder: (context, index) {
+                  final student = students[index];
+
+                  return StudentCard(
+                    studentName: student["name"],
+                    branch: student["branch"],
+                    cgpa: student["cgpa"],
+                    icon: student["icon"],
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
