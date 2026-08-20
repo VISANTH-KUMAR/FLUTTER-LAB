@@ -1,0 +1,240 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(const MyApp());
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Menu Card Demo',
+      theme: ThemeData(primarySwatch: Colors.deepOrange),
+      home: const MenuScreen(),
+    );
+  }
+}
+
+class MenuItem {
+  final String name;
+  final String description;
+  final double price;
+  final String? imageUrl;
+
+  MenuItem({
+    required this.name,
+    required this.description,
+    required this.price,
+    this.imageUrl,
+  });
+}
+
+class MenuScreen extends StatefulWidget {
+  const MenuScreen({super.key});
+
+  @override
+  State<MenuScreen> createState() => _MenuScreenState();
+}
+
+class _MenuScreenState extends State<MenuScreen> {
+  // Sample menu items: pizza, burger, etc.
+  final List<MenuItem> _items = [
+    MenuItem(
+      name: 'Pizza',
+      description: 'Cheesy pepperoni pizza with fresh basil.',
+      price: 9.99,
+      // imageUrl: 'https://images.unsplash.com/photo-...'
+    ),
+    MenuItem(
+      name: 'Burger',
+      description: 'Beef burger with lettuce, tomato & special sauce.',
+      price: 7.49,
+    ),
+    MenuItem(
+      name: 'Pasta',
+      description: 'Creamy Alfredo pasta with parmesan.',
+      price: 8.25,
+    ),
+    MenuItem(
+      name: 'Salad',
+      description: 'Mixed greens with vinaigrette.',
+      price: 5.75,
+    ),
+  ];
+
+  // Track quantities added to cart: index -> qty
+  final Map<int, int> _quantities = {};
+
+  void _addItem(int index) {
+    setState(() {
+      _quantities[index] = (_quantities[index] ?? 0) + 1;
+    });
+    final item = _items[index];
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Added ${item.name} (${_quantities[index]})')),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Menu'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Center(
+              child: Text(
+                'Cart: ${_quantities.values.fold<int>(0, (a, b) => a + b)}',
+                style: const TextStyle(fontSize: 16),
+              ),
+            ),
+          )
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: MenuCard(
+          items: _items,
+          quantities: _quantities,
+          onAdd: _addItem,
+          // optional customization:
+          crossAxisCount: 2,
+        ),
+      ),
+    );
+  }
+}
+
+/// A reusable widget that displays a grid of menu item cards.
+///
+/// - items: list of MenuItem to render
+/// - quantities: optional map of item index -> quantity (to show counts)
+/// - onAdd: callback when user taps Add (passes item index)
+/// - crossAxisCount: grid columns
+class MenuCard extends StatelessWidget {
+  final List<MenuItem> items;
+  final Map<int, int>? quantities;
+  final void Function(int index)? onAdd;
+  final int crossAxisCount;
+
+  const MenuCard({
+    super.key,
+    required this.items,
+    this.quantities,
+    this.onAdd,
+    this.crossAxisCount = 2,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      itemCount: items.length,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: crossAxisCount,
+        crossAxisSpacing: 12,
+        mainAxisSpacing: 12,
+        childAspectRatio: 3 / 4,
+      ),
+      itemBuilder: (context, index) {
+        final item = items[index];
+        final qty = quantities != null ? (quantities![index] ?? 0) : 0;
+        return Card(
+          elevation: 4,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // image / icon area
+              Expanded(
+                flex: 5,
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(12)),
+                  child: item.imageUrl != null
+                      ? Image.network(
+                          item.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              _placeholder(context, item.name),
+                        )
+                      : _placeholder(context, item.name),
+                ),
+              ),
+
+              // title / description / price
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.name,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        item.description,
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.grey[700]),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('\$${item.price.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black87)),
+                          ElevatedButton.icon(
+                            onPressed: onAdd == null
+                                ? null
+                                : () => onAdd!(index),
+                            icon: const Icon(Icons.add_shopping_cart, size: 18),
+                            label: Text(qty > 0 ? 'Add ($qty)' : 'Add'),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 6),
+                              textStyle: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _placeholder(BuildContext context, String name) {
+    // Simple colorful placeholder with first letter
+    final color = Colors.primaries[name.length % Colors.primaries.length];
+    return Container(
+      color: color.shade200,
+      child: Center(
+        child: CircleAvatar(
+          backgroundColor: color.shade400,
+          radius: 36,
+          child: Text(
+            name.isNotEmpty ? name[0].toUpperCase() : '?',
+            style: const TextStyle(fontSize: 28, color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+}
