@@ -1,0 +1,147 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const StudentApp());
+}
+
+class StudentApp extends StatelessWidget {
+  const StudentApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Student Details',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        scaffoldBackgroundColor: Colors.grey.shade100,
+      ),
+      home: const StudentHomePage(),
+    );
+  }
+}
+
+// Reusable Custom Student Card Widget
+class StudentCard extends StatelessWidget {
+  final String studentName;
+  final String branch;
+  final double cgpa;
+  final IconData icon;
+
+  const StudentCard({
+    super.key,
+    required this.studentName,
+    required this.branch,
+    required this.cgpa,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Row(
+          children: [
+            // Student Icon
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.blue.shade100,
+              child: Icon(
+                icon,
+                size: 35,
+                color: Colors.blue,
+              ),
+            ),
+
+            const SizedBox(width: 20),
+
+            // Student Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    studentName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    "Branch: $branch",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  Text(
+                    "CGPA: ${cgpa.toStringAsFixed(2)}",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Home Page
+class StudentHomePage extends StatelessWidget {
+  const StudentHomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Student Details"),
+        centerTitle: true,
+      ),
+
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+
+        children: const [
+          StudentCard(
+            studentName: "Arun Kumar",
+            branch: "Computer Science",
+            cgpa: 8.75,
+            icon: Icons.computer,
+          ),
+
+          StudentCard(
+            studentName: "Priya Sharma",
+            branch: "Information Technology",
+            cgpa: 9.10,
+            icon: Icons.laptop,
+          ),
+
+          StudentCard(
+            studentName: "Rahul Raj",
+            branch: "Mechanical Engineering",
+            cgpa: 8.25,
+            icon: Icons.engineering,
+          ),
+        ],
+      ),
+    );
+  }
+}
