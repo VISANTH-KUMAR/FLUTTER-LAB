@@ -1,0 +1,151 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Flutter Animation Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      home: const AnimationDemoPage(),
+    );
+  }
+}
+
+class AnimationDemoPage extends StatefulWidget {
+  const AnimationDemoPage({super.key});
+
+  @override
+  State<AnimationDemoPage> createState() => _AnimationDemoPageState();
+}
+
+class _AnimationDemoPageState extends State<AnimationDemoPage>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _rotateAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Controls all animations.
+    _controller = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    // Scale: 1.0 -> 1.5
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.5,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.elasticInOut,
+      ),
+    );
+
+    // Rotation: 0 -> one full rotation (2 * pi)
+    _rotateAnimation = Tween<double>(
+      begin: 0.0,
+      end: 2 * 3.14159,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.linear,
+      ),
+    );
+
+    // Opacity: 0.3 -> 1.0
+    _fadeAnimation = Tween<double>(
+      begin: 0.3,
+      end: 1.0,
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Move horizontally from left to right.
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(-1.5, 0),
+      end: const Offset(1.5, 0),
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Flutter Animation Demo'),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: Center(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return SlideTransition(
+              position: _slideAnimation,
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: Transform.rotate(
+                    angle: _rotateAnimation.value,
+                    child: child,
+                  ),
+                ),
+              ),
+            );
+          },
+          child: Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 15,
+                  spreadRadius: 3,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.favorite,
+              color: Colors.white,
+              size: 60,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
