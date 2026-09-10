@@ -1,0 +1,381 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const StudentRegistrationApp());
+}
+
+class StudentRegistrationApp extends StatelessWidget {
+  const StudentRegistrationApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Student Registration Portal',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
+      ),
+      home: const StudentRegistrationPage(),
+    );
+  }
+}
+
+class StudentRegistrationPage extends StatefulWidget {
+  const StudentRegistrationPage({super.key});
+
+  @override
+  State<StudentRegistrationPage> createState() =>
+      _StudentRegistrationPageState();
+}
+
+class _StudentRegistrationPageState
+    extends State<StudentRegistrationPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+
+  String? selectedDepartment;
+  String? selectedGender;
+  bool acceptedTerms = false;
+
+  final List<String> departments = [
+    'Computer Science',
+    'Information Technology',
+    'Electronics',
+    'Mechanical',
+    'Civil',
+  ];
+
+  // Email validation
+  String? validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Email is required';
+    }
+
+    final emailRegex =
+        RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+
+    if (!emailRegex.hasMatch(value.trim())) {
+      return 'Enter a valid email address';
+    }
+
+    return null;
+  }
+
+  // Phone validation
+  String? validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Phone number is required';
+    }
+
+    final phoneRegex = RegExp(r'^[0-9]{10}$');
+
+    if (!phoneRegex.hasMatch(value.trim())) {
+      return 'Enter a valid 10-digit phone number';
+    }
+
+    return null;
+  }
+
+  // Submit form
+  void submitForm() {
+    // Validate all TextFormFields and Dropdown
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Validate gender
+    if (selectedGender == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select your gender'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Validate terms and conditions
+    if (!acceptedTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please accept the Terms & Conditions',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // All validation successful
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Registration submitted successfully!',
+        ),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 3),
+      ),
+    );
+  }
+
+  // Reset form
+  void resetForm() {
+    _formKey.currentState!.reset();
+
+    nameController.clear();
+    emailController.clear();
+    phoneController.clear();
+
+    setState(() {
+      selectedDepartment = null;
+      selectedGender = null;
+      acceptedTerms = false;
+    });
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Student Registration'),
+        centerTitle: true,
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              // Heading
+              const Center(
+                child: Icon(
+                  Icons.school,
+                  size: 70,
+                  color: Colors.blue,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              const Center(
+                child: Text(
+                  'Student Registration Portal',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              // Student Name
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Student Name *',
+                  hintText: 'Enter your full name',
+                  prefixIcon: Icon(Icons.person),
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Student name is required';
+                  }
+
+                  if (value.trim().length < 3) {
+                    return 'Name must contain at least 3 characters';
+                  }
+
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 20),
+
+              // Email
+              TextFormField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  labelText: 'Email Address *',
+                  hintText: 'example@gmail.com',
+                  prefixIcon: Icon(Icons.email),
+                  border: OutlineInputBorder(),
+                ),
+                validator: validateEmail,
+              ),
+
+              const SizedBox(height: 20),
+
+              // Phone
+              TextFormField(
+                controller: phoneController,
+                keyboardType: TextInputType.phone,
+                maxLength: 10,
+                decoration: const InputDecoration(
+                  labelText: 'Phone Number *',
+                  hintText: '10-digit phone number',
+                  prefixIcon: Icon(Icons.phone),
+                  border: OutlineInputBorder(),
+                  counterText: '',
+                ),
+                validator: validatePhone,
+              ),
+
+              const SizedBox(height: 20),
+
+              // Department
+              DropdownButtonFormField<String>(
+                value: selectedDepartment,
+                decoration: const InputDecoration(
+                  labelText: 'Department *',
+                  prefixIcon: Icon(Icons.business),
+                  border: OutlineInputBorder(),
+                ),
+                hint: const Text('Select Department'),
+
+                items: departments.map((department) {
+                  return DropdownMenuItem<String>(
+                    value: department,
+                    child: Text(department),
+                  );
+                }).toList(),
+
+                onChanged: (value) {
+                  setState(() {
+                    selectedDepartment = value;
+                  });
+                },
+
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a department';
+                  }
+
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 25),
+
+              // Gender
+              const Text(
+                'Gender *',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              RadioListTile<String>(
+                title: const Text('Male'),
+                value: 'Male',
+                groupValue: selectedGender,
+                onChanged: (value) {
+                  setState(() {
+                    selectedGender = value;
+                  });
+                },
+              ),
+
+              RadioListTile<String>(
+                title: const Text('Female'),
+                value: 'Female',
+                groupValue: selectedGender,
+                onChanged: (value) {
+                  setState(() {
+                    selectedGender = value;
+                  });
+                },
+              ),
+
+              RadioListTile<String>(
+                title: const Text('Other'),
+                value: 'Other',
+                groupValue: selectedGender,
+                onChanged: (value) {
+                  setState(() {
+                    selectedGender = value;
+                  });
+                },
+              ),
+
+              // Terms and Conditions
+              CheckboxListTile(
+                title: const Text(
+                  'I accept the Terms & Conditions *',
+                ),
+                value: acceptedTerms,
+                onChanged: (value) {
+                  setState(() {
+                    acceptedTerms = value ?? false;
+                  });
+                },
+                controlAffinity:
+                    ListTileControlAffinity.leading,
+                contentPadding: EdgeInsets.zero,
+              ),
+
+              const SizedBox(height: 20),
+
+              // Buttons
+              Row(
+                children: [
+
+                  // Register button
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: submitForm,
+                      icon: const Icon(Icons.app_registration),
+                      label: const Text('Register'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  // Reset button
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: resetForm,
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Reset'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
